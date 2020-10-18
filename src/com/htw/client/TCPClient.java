@@ -1,52 +1,35 @@
-package com.htw.server;
+package com.htw.client;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
  * @author Edwin W (570900) on Okt 2020
- * <p>
- * stellt einen Server auf dem Rechner dar, der aufgerufen werden kann.
  */
-public class TCPServer {
-    /**
-     * der Standardport, wenn keiner explizit im Konstruktor angegeben wird
-     */
+public class TCPClient {
+    private String name = "localhost";
     private int port = 8080;
+    private Socket socket;
     private OutputStream os;
     private InputStream is;
-    private Socket socket;
-    private ServerSocket server;
 
-    /**
-     * Konstruktor der Server - Klasse
-     *
-     * @param port der zu nutzende Port
-     */
-    public TCPServer(int port) {
+    public TCPClient(String name, int port) {
+        this.name = name;
         this.port = port;
     }
 
-    /**
-     * alternativer Konstruktor mit Standardport
-     */
-    public TCPServer() {
+    public TCPClient(int port) {
+        this.port = port;
     }
+
+    public TCPClient() {}
 
     public void start() {
         try {
-            server = new ServerSocket(port);
-            System.out.println("Server is up at:");
-
-            String address = "localhost"; //überschreiben, da server.getInetAddress().getHostAddress() LOKAL funktionslos ist
-            System.out.println(address + ":" + port);
-
-            socket = server.accept();
-            System.out.println("Server accepted connection");
-
+            socket = new Socket(name, port);
             os = socket.getOutputStream();
             is = socket.getInputStream();
+            System.out.println("Client is up");
         } catch (IOException e) {
             System.err.println("Exception: " + e.getMessage());
         }
@@ -72,25 +55,26 @@ public class TCPServer {
             os.close();
             is.close();
             socket.close();
-            System.out.println("Server end");
+            System.out.println("Client end");
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+
+
     }
 
     public static void main(String[] args) {
-        //starte den Server
+        //starte den Client
         try {
-            TCPServer s1 = new TCPServer(Integer.parseInt(args[0]));
-
-            s1.start();
-            s1.sendMsg("Server sagt Hallo zu Client");
-            s1.readMsg();
-            s1.close();
+            TCPClient c1 = new TCPClient(args[1], Integer.parseInt(args[0]));
+            c1.start();
+            c1.sendMsg("Hi Server, ich bin Client");
+            c1.readMsg();
+            c1.close();
         } catch (NumberFormatException nfe) {
             System.err.println("NumberFormatException: " + nfe.getMessage());
         }
-    }
 
+    }
 
 }
