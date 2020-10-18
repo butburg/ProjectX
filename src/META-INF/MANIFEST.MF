@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: com.htw.client.TCPClient
+Main-Class: com.htw.server.TCPServer
 

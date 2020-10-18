@@ -42,11 +42,12 @@ public class TCPClient {
     }
 
     public void readMsg() {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is), 4);
+        byte[] readBuffer = new byte[300];
         try {
-            System.out.println(br.readLine());
+            is.read(readBuffer);
+            System.out.println(new String(readBuffer));
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 
