@@ -22,7 +22,8 @@ public class TCPClient {
         this.port = port;
     }
 
-    public TCPClient() {}
+    public TCPClient() {
+    }
 
     public void start() {
         try {
@@ -47,7 +48,25 @@ public class TCPClient {
             is.read(readBuffer);
             System.out.println(new String(readBuffer));
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void sendFile(String filename) {
+        try {
+            DataOutputStream dos = new DataOutputStream(os);
+            FileInputStream fis = new FileInputStream(filename);
+            File file = new File(filename);
+            byte[] sendBuffer = new byte[(int) file.length()];
+
+            while (fis.read(sendBuffer) > 0) {
+                dos.write(sendBuffer);
+            }
+
+            fis.close();
+            dos.close();
+        } catch (IOException e) {
+            e.getStackTrace();
         }
     }
 
@@ -71,6 +90,7 @@ public class TCPClient {
             c1.start();
             c1.sendMsg("Hi Server, ich bin Client");
             c1.readMsg();
+            c1.sendFile("halloWelt.txt");
             c1.close();
         } catch (NumberFormatException nfe) {
             System.err.println("NumberFormatException: " + nfe.getMessage());

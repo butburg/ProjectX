@@ -64,7 +64,30 @@ public class TCPServer {
             is.read(readBuffer);
             System.out.println(new String(readBuffer));
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void receiveFile() {
+        DataInputStream dis = new DataInputStream(is);
+        FileOutputStream fos = null;
+        try {
+            byte[] sendBuffer = new byte[1000];
+            fos = new FileOutputStream("test.txt");
+
+            int read = 0;
+            int totalRead = 0;
+
+            while((read = dis.read(sendBuffer, 0, sendBuffer.length)) > 0) {
+                totalRead += read;
+                System.out.println("read " + totalRead + " bytes.");
+                fos.write(sendBuffer, 0, read);
+            }
+
+            fos.close();
+            dis.close();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
     }
 
@@ -87,6 +110,7 @@ public class TCPServer {
             s1.start();
             s1.sendMsg("Server sagt Hallo zu Client");
             s1.readMsg();
+            s1.receiveFile();
             Thread.sleep(5000);
             s1.close();
         } catch (NumberFormatException | InterruptedException nfe) {
