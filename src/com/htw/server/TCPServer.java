@@ -3,6 +3,7 @@ package com.htw.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * @author Edwin W (570900) on Okt 2020
@@ -10,6 +11,7 @@ import java.net.Socket;
  * stellt einen Server auf dem Rechner dar, der aufgerufen werden kann.
  */
 public class TCPServer {
+    private static final int PORT = 4272;
     /**
      * der Standardport, wenn keiner explizit im Konstruktor angegeben wird
      */
@@ -59,8 +61,9 @@ public class TCPServer {
     }
 
     public void readMsg() {
-        byte[] readBuffer = new byte[300];
         try {
+            is = socket.getInputStream();
+            byte[] readBuffer = new byte[300];
             is.read(readBuffer);
             System.out.println(new String(readBuffer));
         } catch (IOException e) {
@@ -68,33 +71,74 @@ public class TCPServer {
         }
     }
 
+    public void sendFile(String filename) {
+        try {
+            FileInputStream fis = new FileInputStream(filename);
+
+            int tmpRead = 0;
+            do {
+                tmpRead = fis.read();
+                if (tmpRead != -1) {
+                    os.write(tmpRead);
+                }
+            } while (tmpRead != -1);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void receiveFile() {
         DataInputStream dis = new DataInputStream(is);
-        FileOutputStream fos = null;
+        String filename = "";
         try {
-            byte[] sendBuffer = new byte[1000];
-            fos = new FileOutputStream("test.txt");
-
-            int read = 0;
-            int totalRead = 0;
-
-            while((read = dis.read(sendBuffer, 0, sendBuffer.length)) > 0) {
-                totalRead += read;
-                System.out.println("read " + totalRead + " bytes.");
-                fos.write(sendBuffer, 0, read);
-            }
-
-            fos.close();
-            dis.close();
+            filename = dis.readUTF();
+            FileOutputStream fos = new FileOutputStream("new"+filename);
+            int tmpRead;
+            do {
+                tmpRead = is.read();
+                System.out.println("server receiving byte:" + tmpRead);
+                if (tmpRead != -1) {
+                    System.out.println("server receiving byte;" + tmpRead);
+                    fos.write(tmpRead);
+                }
+            } while (tmpRead != -1);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    public void sendSensorData(String sensorname, float sensorvalue, long timestamp) {
+        DataOutputStream dos = new DataOutputStream(os);
+        try {
+            dos.writeUTF(sensorname);
+            dos.writeLong(timestamp);
+            dos.writeFloat(sensorvalue);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("bad3");
+        }
+    }
+
+    public Object[] receiveSensorData() {
+        DataInputStream dis = new DataInputStream(is);
+        String sensorname = "";
+        long timestamp = -1;
+        float sensorvalue = -1;
+        try {
+            sensorname = dis.readUTF();
+            timestamp = dis.readLong();
+            sensorvalue = dis.readFloat();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("bad4");
+        }
+        return new Object[]{sensorname, sensorvalue, timestamp};
     }
 
     public void close() {
         try {
             os.close();
-            is.close();
             socket.close();
             System.out.println("Server end");
         } catch (IOException e) {
@@ -105,13 +149,26 @@ public class TCPServer {
     public static void main(String[] args) {
         //starte den Server
         try {
-            TCPServer s1 = new TCPServer(Integer.parseInt(args[0]));
+            TCPServer s1 = new TCPServer(PORT);
 
             s1.start();
+
+            Object[] sensorData = s1.receiveSensorData();
+            System.out.println("received sensordate at server:");
+            System.out.println(Arrays.toString(sensorData));
+
+            s1.sendSensorData(((String) sensorData[0]), ((float) sensorData[1]), ((long) sensorData[2]));
+            System.out.println("send sensordata back to client");
+
             s1.sendMsg("Server sagt Hallo zu Client");
             s1.readMsg();
+            s1.readMsg();
+
             s1.receiveFile();
+            System.out.println("file received at server");
+
             Thread.sleep(5000);
+
             s1.close();
         } catch (NumberFormatException | InterruptedException nfe) {
             System.err.println("NumberFormatException: " + nfe.getMessage());

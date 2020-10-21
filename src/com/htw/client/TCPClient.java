@@ -2,6 +2,7 @@ package com.htw.client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * @author Edwin W (570900) on Okt 2020
@@ -52,47 +53,113 @@ public class TCPClient {
         }
     }
 
-    public void sendFile(String filename) {
+
+    public void receiveFile() {
+        DataInputStream dis = new DataInputStream(is);
+        String newFilename = "";
         try {
-            DataOutputStream dos = new DataOutputStream(os);
-            FileInputStream fis = new FileInputStream(filename);
-            File file = new File(filename);
-            byte[] sendBuffer = new byte[(int) file.length()];
-
-            while (fis.read(sendBuffer) > 0) {
-                dos.write(sendBuffer);
-            }
-
-            fis.close();
-            dos.close();
+            newFilename = dis.readUTF();
+            FileOutputStream fos = new FileOutputStream(newFilename);
+            int tmpRead = 0;
+            do {
+                tmpRead = is.read();
+                System.out.println("client receiving byte:" + tmpRead);
+                if (tmpRead != -1) {
+                    fos.write(tmpRead);
+                }
+            } while (tmpRead != -1);
         } catch (IOException e) {
-            e.getStackTrace();
+            e.printStackTrace();
         }
+    }
+
+    public void sendFile(String filename) {
+        DataOutputStream dos = new DataOutputStream(os);
+        try {
+            FileInputStream fis = new FileInputStream(filename);
+            dos.writeUTF(filename);
+            int tmpRead;
+            do {
+                tmpRead = fis.read();
+                System.out.println("client sends byte:" + tmpRead);
+                if (tmpRead != -1) {
+                    System.out.println("client sends byte;" + tmpRead);
+                    os.write(tmpRead);
+                }
+            } while (tmpRead != -1);
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendSensorData(String sensorname, float sensorvalue, long timestamp) {
+        DataOutputStream dos = new DataOutputStream(os);
+        try {
+            dos.writeUTF(sensorname);
+            dos.writeLong(timestamp);
+            dos.writeFloat(sensorvalue);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("bad2");
+            System.exit(0);
+        }
+    }
+
+    public Object[] receiveSensorData() {
+        DataInputStream dis = new DataInputStream(is);
+        String sensorname = "";
+        long timestamp = -1;
+        float sensorvalue = -1;
+        try {
+            sensorname = dis.readUTF();
+            timestamp = dis.readLong();
+            sensorvalue = dis.readFloat();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("bad1");
+        }
+        return new Object[]{sensorname, sensorvalue, timestamp};
     }
 
     public void close() {
         try {
             os.close();
-            is.close();
             socket.close();
             System.out.println("Client end");
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
-
-
     }
 
     public static void main(String[] args) {
         //starte den Client
         try {
-            TCPClient c1 = new TCPClient(args[1], Integer.parseInt(args[0]));
+            TCPClient c1 = new TCPClient(args[0], Integer.parseInt(args[1]));
             c1.start();
-            c1.sendMsg("Hi Server, ich bin Client");
+
+            System.out.println("1s sleep..");
+            Thread.sleep(1000);
+
+            c1.sendSensorData("sensor1", 213, System.currentTimeMillis());
+            System.out.println("sensordata send from client");
+
+            Object[] sensorData = c1.receiveSensorData();
+            System.out.println("received at client: " + Arrays.toString(sensorData));
+
+
+            Thread.sleep(2000);
+
+            c1.sendMsg("i ");
+            c1.sendMsg("schlau");
             c1.readMsg();
-            c1.sendFile("halloWelt.txt");
+
+            c1.sendFile("testFiles/halloWelt.txt");
+            System.out.println("file send from client");
+
             c1.close();
-        } catch (NumberFormatException nfe) {
+
+        } catch (NumberFormatException | InterruptedException nfe) {
             System.err.println("NumberFormatException: " + nfe.getMessage());
         }
 
