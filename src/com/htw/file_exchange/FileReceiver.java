@@ -6,7 +6,7 @@ import java.io.InputStream;
 /**
  * @author Edwin W (570900) on Okt 2020
  */
-public interface FileReceive {
+public interface FileReceiver {
     /**
      * Receive a content from input stream and writes it to a new local file
      *

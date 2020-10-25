@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * @author Edwin W (570900) on Okt 2020
  */
-public class FileExchanger implements FileSend, FileReceive {
+public class FileExchanger implements FileTransmitter, FileReceiver {
 
     @Override
     public void sendFile(String filename, OutputStream os) throws IOException {

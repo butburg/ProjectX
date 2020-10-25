@@ -1,8 +1,8 @@
 package com.htw.app;
 
 import com.htw.file_exchange.FileExchanger;
-import com.htw.file_exchange.FileReceive;
-import com.htw.file_exchange.FileSend;
+import com.htw.file_exchange.FileReceiver;
+import com.htw.file_exchange.FileTransmitter;
 import com.htw.tcp.Client;
 import com.htw.tcp.Connection;
 import com.htw.tcp.Server;
@@ -21,8 +21,8 @@ public class TCPFileExchangeImpl implements TCPFileExchange {
         Connection conn = c1.connect(hostname, port);
 
         //sendFile
-        FileSend fileSend = new FileExchanger();
-        fileSend.sendFile(filename, conn.getOutputStream());
+        FileTransmitter fileTransmitter = new FileExchanger();
+        fileTransmitter.sendFile(filename, conn.getOutputStream());
 
     }
 
@@ -33,7 +33,7 @@ public class TCPFileExchangeImpl implements TCPFileExchange {
         Connection conn = srv.acceptConnection(port);
 
         //receive File
-        FileReceive fileReceive = new FileExchanger();
-        fileReceive.receivedFile(filename, conn.getInputStream());
+        FileReceiver fileReceiver = new FileExchanger();
+        fileReceiver.receivedFile(filename, conn.getInputStream());
     }
 }

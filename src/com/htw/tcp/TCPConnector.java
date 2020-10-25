@@ -16,6 +16,7 @@ public class TCPConnector implements Client, Server, Connection {
     @Override
     public Connection connect(String hostname, int port) throws IOException {
         socket = new Socket(hostname, port);
+        System.out.println("client socket created");
         return this;
     }
 

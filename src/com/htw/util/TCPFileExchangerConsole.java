@@ -19,7 +19,9 @@ public class TCPFileExchangerConsole {
     public static void main(String[] args) throws IOException {
 
         if (args.length < 2) {
-            System.err.println("Arguments required in specific form: 'filename hostname(optional) port'");
+            System.err.println("Arguments required in specific form, e.g.: 'test.txt localhost 8080'");
+            System.err.println("as Server: 'newFilename portX'");
+            System.err.println("as client: 'sourceFilename hostname portX'");
             return;
         }
 
